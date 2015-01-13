@@ -1,0 +1,98 @@
+---
+title: "Day 6 Homework"
+output: html_document
+---
+
+1. Think carefully about your data.  Think about something you would like to do multiple times, to subsets of your data.  
+
+```{r}
+mystores <- read.csv(.."FoodAccess_USDA_Stores.csv")
+
+```
+
+
+2. Write out (in plain English, in the notebook) what you are trying to do
+
+I would like to identify the counties with the most grocery stores in the State of Maryland. In order to do this, I will create a ranking system and assign a value of 1, 2, 3 or 4, to each county depending on number of grocery stores that it has in column "Groc11."
+
+
+3. Write some "pseudo-code" comments in an R chunk, as an outline
+
+```{r}
+// Create a subset of all MD counties, rows 1202-1225
+// Create a series of if else statements to set a range of values associated with each county ranking
+// Create a vector that includes all 24 MD counties so that my.answer shows more than one value
+// Create a loop that would do this for all counties in the Groc11 column
+
+```
+
+4. Write some (real) code that will do what you want ONCE, on one subset of the data.
+
+```{r}
+MDcounties <- mystores[1202:1225,"Groc11"]
+MDcounties
+x <- "MDcounties"
+summary(MDcounties) #I used the quartiles and median to determine the value range for each rank
+
+if(x >= 37) {
+  y <- 1
+}
+
+if((x >= 16)&(x<37)) {
+  y <- 2
+}
+  
+if ((x >= 9)&(x<16)) {
+  y <- 3
+}
+
+if ((x>0)&(x<9)) {
+  y <- 4
+}
+y
+# This shows me that the code properly coded the last county as a "1" because it had 224 grocery stores but it only shows the last rank, not all ranks for all counties within the vector.
+
+```
+
+
+5. Copy that code chunk, and convert it into a loop, which will do what you want over all the groups, concatenating the results.
+```{r}
+
+my.answer <- vector(length = 24)
+  for (this.MDcounties in 1:24) {
+  this.vector <- mystores[mystores$MDcounties == this.MDcounties, “x”]
+  my.answer[this.MDcounties] <- this.vector
+}
+ # I am not sure how to include the determination of rank into the loop? I do not want to assign the same value for each row of the vector. Do I include it where we put the "mean" in the lecture example?
+
+
+```
+
+
+6. Copy that loop again, and at a condition (`if`) statement to add some further control about ignoring some groups or some other conditional operation.
+
+```{r}
+my.answer <- vector(length = 24)
+for (this.MDcounties in 1:24) {
+if(x >= 37) {
+  y <- 1
+}
+
+if((x >= 16)&(x<37)) {
+  y <- 2
+}
+  
+if ((x >= 9)&(x<16)) {
+  y <- 3
+}
+
+if ((x>0)&(x<9)) {
+  y <- 4
+}
+this.vector <- mystores[mystores$MDcounties == this.MDcounties, “y”]
+my.answer[this.MDcounties] <- this.vector
+} 
+# Still uncertian how to combine the "if" statments into a loop
+
+```
+
