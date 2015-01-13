@@ -1,0 +1,90 @@
+---
+title: "Day 3 Homework"
+output: html_document
+---
+
+The goal of this homework is to get practice with manipulating data.
+
+```{r}
+mystores <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Stores.csv")
+install.packages("reshape2")
+library(reshape2)
+```
+
+
+1. Make both a "wide" and a "long" version of your data
+```{r}
+mystores.melt <- melt(mystores, id.vars=(1:3), measure.vars=(4:35), value.name = "StoreAvalibility", variable.name = "StoreType") #could also change numbers to column names
+head(mystores.melt) 
+
+mystore.cast <- dcast(mystore.melt, FIPS + State + County ~ StoreType, value.var = StoreAvalibility)
+head(mystore.cast)
+# recieved error message that the object "StoreAvalibility" was not found, however I thought this was the column that now had the values 
+```
+
+2. Transform a variable
+
+```{r}
+mystores
+mystores$SpecializedStores_2000people <- mystores$CONVSPTH11 * 2
+head(mystores)
+```
+
+3. Recode a factor
+
+```{r}
+summary(mystores)
+# After looking at the summary table, I noticed that I didn't have any factors in the original dataset. I created a new factor and then recoded it.
+
+mystores$StoreSize <- rep ("large", 3256)
+mystores$StoreSize <- as.factor(mystores$StoreSize)
+levels(mystores$StoreSize) <- c("small") 
+```
+
+
+4. Add a new factor, where the levels are conditional on the values of some other variable. E.g., a factor of "high", "medium", and "low" based on thresholds for another variable.
+
+```{r}
+mystores$Visitors <- rep(c("many","few","none", 3256)) #This actually resulted in 3256 being considered as a level name. However without the number, it did not repeat the variable names
+# rep(c("many","few","none"), 3256/3)
+mystores$Visitors <- as.factor(mystores$Visitors)
+x <- c("high","medium","small")
+mystores$StoreAccess <- ifelse(mystores$Visitors == "many", x[1], ifelse(mystores$Visitors == "few", x[2], ifelse(mystores$Visitors == "none", x[3], NA)))
+```
+
+5. Reorder the levels of this new factor
+
+```{r}
+mystores$StoreAccess <- as.factor(mystores$StoreAccess)
+mystores$StoreAccess <- relevel(mystores$StoreAccess, "small")
+levels(mystores$StoreAccess)
+```
+
+6. Choose a factor that could be re-coded as multiple dimensions (recall the sepal/petal vs. length/width breakdown). If you don't have one, try to create one.  Now create two (or more) new factors that represent these dimensions.
+
+```{r}
+mystores$Large.grocery <- rep ("grocery1", 3256)
+mystores$Large.convn <- rep("convn1", 3256)
+mystores$Small.grocery <- rep("grocery2", 3256)
+mystores$Small.convn <- rep("convn2", 3256)
+mystores$Large.grocery <- as.factor(mystores$Large.grocery)
+mystores$Large.convn <- as.factor(mystores$Large.convn)
+mystores$Small.grocery <- as.factor(mystores$Small.grocery)
+mystores$Small.convn <- as.factor(mystores$Small.convn)
+# these columns are my sepal/petal, length/width equivalents
+
+mystores.melt2 <- cbind(mystores,colsplit(mystores$large.grocery, pattern = "\\.", names = c("StoreSize2", "StoreType2")))
+# tried to use the "better way" but error says that there is a "differing number of rows."" I think I am missing a step pre-melting 
+```
+
+
+7. Using `dcast`, aggregate some variable into "cell means" of some kind.
+
+```{r}
+mystores.melt <- melt(mystores, id.vars=(1:3), measure.vars=(4:35), value.name = "StoreAvalibility", variable.name = "StoreType")
+mystores.agg1 <- dcast(mystores.melt, FIPS + State + County ~ StoreType, value.var = "StoreAvalibility", fun.aggregate = mean)
+# this last function was accepted but looking at the table, there was no difference/change in store avalibility
+```
+
+
+8.  Save all of the above in a well-documented R Markdown document.  Email me the .Rmd file (and if you use different or updated data from Day 2 Homework, send that to me, too).

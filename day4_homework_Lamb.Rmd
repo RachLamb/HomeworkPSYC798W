@@ -1,0 +1,125 @@
+---
+title: "Day 4 Homework"
+output: html_document
+---
+
+```{r}
+mystores <- read.csv(.."FoodAccess_USDA_Stores.csv")
+
+```
+
+1. Change the column names of your data to something easier to work with.  If you like your column names, change them into something else reasonable, just for practice.
+
+```{r}
+colnames(mystores)
+mynames <- c("FIPS", "State", "County", "Groc07", "Groc11","GrChange","GrPop07","GrPop11", "GrPopChange", "Super07", "Super11", "SuChange", "SuPop07", "SuPop11" ,"SuPopChange", "Conv07", "Conv11" , "ConChange" , "ConPop07", "ConPop11", "ConPopChange", "Special07","Special11", "SpChange", "SpPop07", "SpPop11","SpPopChange", "Snap08","Snap12","SnChange", "SnPop08", "SnPop12", "SnPopChange", "WIC08", "WIC12","WChange","WPop08", "WPop12", "WPopChange") 
+colnames(mystores) <- mynames
+head(mystores)
+
+```
+
+2. List ALL the issues you can see where it looks like your data is being read in a weird way.  If your data looks perfect, find some way to mess it up :-)
+
+```{r}
+summary(mystores)
+# The FIPS column is reading as a numeric value but it is simply an ID column and should be converted into a factor
+# The units for each of these columns is different: count, percent, percent change, and #per 1,000 people. The statistics being generated via each column could be okay as long as the reader knows this when looking at them but maybe there is a way to make this explicit?
+# There are NAs in almost every column and should be addressed before conducting statistical analysis. Given the original dataset, all NAs have been assigned to previously blank spaces.
+
+```
+
+3. Pick one or two of the most egregious or problematic of the issues in #2 and fix them.
+
+```{r}
+mystores$FIPS <- as.factor(mystores$FIPS)
+summary(mystores)
+# this addresses issue #1, although it was not the most problematic
+# Regarding issues #2, I saw that you could use "difftime"" and "units"" to specify time units such as "secs", "weeks" , "hours", but I did not see a similar function for other kinds of units. Suggestions?
+# issue #3 is discussed below
+```
+
+4. Check for NAs, and report where you see them (try to pinpoint where they are, not just "5 NAs in column seven".
+
+```{r}
+is.na (mystores)
+#yields a table showing where the NAs are in each column and row. NAs are denoted by a TRUE. 
+mystores[!complete.cases(mystores),] # I used this function isolate all the rows that contained NAs. For example, there are NAs in row 91 across all columns. After looking at the summary table one more time I noticed that row 91 was Prince of Wales-Outer Ketchi, AK, suggesting no data at all for this county. 
+
+```
+
+5. Decide what you think you should do about the NAs, and say why.  If you can, try to implement this decision.
+
+```{r}
+#There are a lot of NAs in every category and within many different rows. If the row (i.e. county) contains NAs across columns (4:35) it could be removed. If there is data missing from one of the columns I would keep the row but make sure to omit the NA from any statisitical analysis related to the column using na.rm  
+
+mystoresnew<- mystores[-c(91), ]
+head(mystoresnew, 100)
+# This function created a new data set without row 91, identified above as having NAs across columns 4:35. How do I first isolate all rows with NAs across columns 4:35 to know which rows to delete throughout entire dataset?
+
+```
+
+6. Remove any problematic rows and/or columns.  Say why you want to remove them.  If there aren't any problems, describe why you think there are no problems.
+
+```{r}
+# There are not problematic rows but given my interest specifically in DC and the counties surrounding it, I created a subset with the following rows: 
+  ## Anne Arundel, MD - row 1203
+  ## Charles, MD - row 1209
+  ## Prince George's, MD - row 1217
+  ## Montgomery, MD - row 1216
+  ## Howard, MD - row 1214
+  ## Loudoun, VA - row 2882
+  ## Arlington, VA - row 2836
+  ## Alexandria, VA - row 2925
+  ## Falls Church, VA - row 2937
+  ## Fairfax, VA - row 2936
+  ## Prince William, VA - row 2902
+  ## Fauquier, VA - row 2859
+  ## District of Columbia - row 326
+# I also removed the columns regarding WIC and SNAP for this homework because they have a different date range than the others. 
+
+mystores[28:39]<-list(NULL) 
+head(mystores)
+DCsub <- mystores[mystores$County %in% c("Ann Arundel", "Charles","Prince George's", "Montgomery", "Howard", "Loudoun", "Arlington", "Alexandria", "Falls Church", "Fairfax", "Prince William", "Fauquier", "District of Columbia"), ]
+DCsub
+# Since there were multiple counties in the country with these names I had to further reduce the subgroup
+DCsub2 <- DCsub[DCsub$State %in% c("MD", "VA", "DC"), ]
+DCsub2
+```
+
+
+7. Re-code at least one factor.  Provide a table that shows the correspondence between old levels and new levels.
+
+```{r}
+# I created a factor first, recoded (and reordered) it, then created a table
+DCsub2$CountyProximity <- rep(c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"), 1 ) 
+DCsub2$CountyProximity <- as.factor(DCsub2$CountyProximity) 
+summary(DCsub2)
+levels(DCsub2$CountyProximity) <- c("N","M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A")
+DCsub2
+
+```
+
+
+8. Run TWO DIFFERENT simple analyses or statistical tests, such as linear regression (`lm()`), logistic regression (`glm()`), correlation test (`cor.test()`), t-test (`t.test()`), or non-parametric tests (e.g., `wilcox.test()`).  For each of these:
+  - Describe why you are doing this analysis, i.e., what question is it answering?
+  - I won't judge you on statistical expertise!  (though I will make comments if I think I can be helpful)
+  - Report some key statistics from the analysis, using inline code
+  
+  
+```{r}
+# First, I want to do a t-test between the number of grocery stores in 2007 and 2008 to see if there is a significant difference between them. Using the following script produced the following error message which tells me that there are not enough observations. 
+
+t.test("Groc07","Groc11",alternative="less", var.equal=TRUE)
+
+# I subsequently tried to run a linear regression between the numbers within the same two columns to see get the r value. I tried to follow the format below but ran into errors because there was an unexpected symbol in the title of the group. Therefore I could not display my final results. However, I would use the following format:
+
+#The estimate for the GrocStats coefficient was `r round(est, 4) `, with a standard error of `r ` and a p of `r `
+
+07stats <- c(189,22,42,203,140,44,182,11,48,14,64,33,17,10)
+11stats <- c(174,20,41,201,158,42,178,14,49,16,64,30,16,9)
+group <- gl(2,10,20, labels = c("07stats", "11stats"))
+number <- c(07stats, 11stats)
+lm.D9 <- lm(number ~ group)
+summary(lm.D9)
+
+```
