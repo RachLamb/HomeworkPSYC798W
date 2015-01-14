@@ -1,0 +1,61 @@
+---
+title: "Day 7 Homework"
+output: html_document
+---
+
+1. Work on making progress on your Final Project.
+
+2. Document some road blocks you are running into.
+
+3. Email them to me before 7am tomorrow.
+
+```{r}
+# Created a data frame with select columns and counties from the "stores" Excel sheet 
+
+mystores <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Stores.csv")
+colnames(mystores)
+mynames <- c("FIPS", "State", "County", "Groc07", "Groc11","GrChange","GrPop07","GrPop11", "GrPopChange", "Super07", "Super11", "SuChange", "SuPop07", "SuPop11" ,"SuPopChange", "Conv07", "Conv11" , "ConChange" , "ConPop07", "ConPop11", "ConPopChange", "Special07","Special11", "SpChange", "SpPop07", "SpPop11","SpPopChange", "Snap08","Snap12","SnChange", "SnPop08", "SnPop12", "SnPopChange", "WIC08", "WIC12","WChange","WPop08", "WPop12", "WPopChange") 
+colnames(mystores) <- mynames
+head(mystores)
+mystores$FIPS <- as.factor(mystores$FIPS)
+summary(mystores)
+mystores[28:39]<-list(NULL) 
+head(mystores)
+DCsubstores <- mystores[mystores$County %in% c("Ann Arundel", "Charles","Prince George's", "Montgomery", "Howard", "Loudoun", "Arlington", "Alexandria", "Falls Church", "Fairfax", "Prince William", "Fauquier", "District of Columbia"), ]
+DCsubstores
+DCsubstores2 <- DCsubstores[DCsubstores$State %in% c("MD", "VA", "DC"), ]
+DCsubstores2
+
+# Created a second data frame with the columns concerning Farmers Markets from the "local" Excel spread sheet. Changed column labels to match first dataset. 
+
+mymarket <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Local.csv")
+DCsubmarket <- mymarket[mymarket$County %in% c("Ann Arundel", "Charles","Prince George's", "Montgomery", "Howard", "Loudoun", "Arlington", "Alexandria", "Falls Church", "Fairfax", "Prince William", "Fauquier", "District of Columbia"), ]
+DCsubmarket2 <- DCsubmarket[DCsubmarket$State %in% c("MD", "VA", "DC"), ]
+colnames(DCsubmarket2)
+DCsubmarket2[1:2] <- list(NULL)
+DCsubmarket2[2:6] <- list(NULL)
+DCsubmarket2[8:43] <- list(NULL)
+mynames2 <- c("County", "Farm09", "Farm13", "FaChange","FaPop09", "FaPop13","FaPopChange")
+colnames(DCsubmarket2) <- mynames2
+colnames(DCsubmarket2)
+DCsubmarket2
+
+# Created a thid data frame with the columns concerning population demographic data from "socioeconomic" Excel spread sheet. Changed column labels
+
+mydemo<- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_socioeconomic.csv")
+DCsubdemo <- mydemo[mydemo$County %in% c("Ann Arundel", "Charles","Prince George's", "Montgomery", "Howard", "Loudoun", "Arlington", "Alexandria", "Falls Church", "Fairfax", "Prince William", "Fauquier", "District of Columbia"), ]
+DCsubdemo2 <- DCsubdemo[DCsubdemo$State %in% c("MD", "VA", "DC"), ]
+colnames(DCsubdemo2)
+DCsubdemo2[1:2] <- list(NULL)
+DCsubdemo2[12:16] <- list(NULL)
+mynames3 <- c("County", "WhitePop", "BlackPop", "HispanicPop","AsianPop", "AmIndianPop","IslanderPop","65yrs+","<18yrs", "MedianIncome","PovRate")
+colnames(DCsubdemo2) <- mynames3
+colnames(DCsubdemo2)
+DCsubdemo2
+
+# Merged all three data frames together -- this is not really working well, is there a better way to do this?
+merge(DCsubstores2, DCsubmarket2, DCsubdemo2, "County")
+
+
+```
+
