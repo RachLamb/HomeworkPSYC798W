@@ -1,0 +1,100 @@
+---
+title: "Day 8 Homework"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(reshape2)
+mystores <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Stores.csv")
+mynames <- c("FIPS", "State", "County", "Groc07", "Groc11","GrChange","GrPop07","GrPop11", "GrPopChange", "Super07", "Super11", "SuChange", "SuPop07", "SuPop11" ,"SuPopChange", "Conv07", "Conv11" , "ConChange" , "ConPop07", "ConPop11", "ConPopChange", "Special07","Special11", "SpChange", "SpPop07", "SpPop11","SpPopChange", "Snap08","Snap12","SnChange", "SnPop08", "SnPop12", "SnPopChange", "WIC08", "WIC12","WChange","WPop08", "WPop12", "WPopChange") 
+colnames(mystores) <- mynames
+
+```
+
+
+1. Try to recreate the results of Homework 6 (or your intended results) using the `dplyr` functions.
+```{r}
+// Create a subset of all MD counties, rows 1202-1225
+// Create a series of if else statements to set a range of values associated with each county ranking
+// Create a vector that includes all 24 MD counties so that my.answer shows more than one value
+// Create a loop that would do this for all counties in the Groc11 column
+```
+
+
+```{r}
+# Create subset of data
+mysubset <- filter(mystores, State = "MD") #I only need MD rows but otherwise do not have another condition (i.e. a certian numerical value within another column). It doesn't seem like the filter function will let me do this.
+
+#I am lost as to how to use the dplr package to create the ranking values for each "if"" statement. The closest thing I can think of is to run a seperate script for each rank:
+  
+mysubset %>% 
+  filter(Groc11 >= 37) %>%
+  group_by(County) %>%
+
+myrankings <- mutate(mysubset, rank = c("1")) # this probably does not make much sense but it would be good to create a new column related to this subset and assign a value of "1" to each row in the subset. However, for each subsequent ranking, I don't want to have another column but add to the new one I created. 
+
+```
+
+2. Find another kind of analysis/transformation/summary stat that you want to apply across multiple groups in your data. Use the functions from `reshape2` and `dplyr` to get these results.
+
+```{r}
+#Get the means of `GrPopChange` for each level of `State`
+mystores %>%
+  group_by(State) %>%
+  summarize(mean = mean(GrPopChange))
+
+# Create a subset of the columns
+mystores.column.subset <- select(mystores, State, County, Groc07, Super07, Conv07, Special07)
+head(mystores.column.subset)
+
+# Melt down the last four columns, which are all frequency measures.  Get the min, max, and mean log values for all of these measures, by State.
+mystores.column.subset %>% 
+  melt(measure.vars = 3:6) %>%
+  group_by(variable, State) %>%
+  summarize(minlog = min(log(value)), maxlog = max(log(value)), mean = mean(log(value)))  # the resulting numbers do not seem intuitive to me -- perhaps log was not the right kind of transformation?
+
+#Do the same as above, but only where GrPopChange is greater than the median value for each State.
+step1 <- mystores %>% 
+  group_by(State) %>%
+  summarize(medHST = median(GrPopChange))
+step1
+
+mystores.column.subset %>% 
+  merge(step1) %>%
+  filter(GrPopChange > medHST) %>%
+  melt(measure.vars = 3:6) %>%
+  group_by(variable, State) %>%
+  summarize(minlog = min(log(value)), maxlog = max(log(value)), mean = mean(log(value))) %>%
+
+```
+
+3. For more practice, try another example of something like #2 (find another stat or grouping or something).
+
+
+```{r}
+# Find the mean number of specialty stores in states where the change in the number of grocery stores per 1000 people was greater than 10 
+
+mystores <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Stores.csv")
+mynames <- c("FIPS", "State", "County", "Groc07", "Groc11","GrChange","GrPop07","GrPop11", "GrPopChange", "Super07", "Super11", "SuChange", "SuPop07", "SuPop11" ,"SuPopChange", "Conv07", "Conv11" , "ConChange" , "ConPop07", "ConPop11", "ConPopChange", "Special07","Special11", "SpChange", "SpPop07", "SpPop11","SpPopChange", "Snap08","Snap12","SnChange", "SnPop08", "SnPop12", "SnPopChange", "WIC08", "WIC12","WChange","WPop08", "WPop12", "WPopChange") 
+colnames(mystores) <- mynames
+
+
+mystores %>% 
+  filter(GrPopChange > 10) %>%
+  group_by(State) %>%
+  summarize(meanSp = mean(Special11))
+# should every state have a value here? The table gives me a mean for each state but I know that not every one of the states experienced an increase in the number of grocerty stores per 1000 people between 2007-2011. 
+
+```
+
+4. Do yet another case of #2 above, but this time throw in a transformation, too.
+
+```{r}
+# Create new columns to represent the log of values within both the SnChange and WChange columns 
+
+mystores <- mutate(mystores, newcolumn = log(SnChange), anothercol = log(WChange))
+head(mystores)
+
+```
+
