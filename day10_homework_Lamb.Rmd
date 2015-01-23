@@ -1,0 +1,96 @@
+---
+title: "Day 10 Homework"
+output: html_document
+---
+```{r}
+mystores <- read.csv("~/Desktop/PSYC 798W/FoodAccess_USDA_Stores.csv")
+library(ggplot2)
+library(MASS)
+```
+
+
+1. Find some relationship in your data (e.g., correlation, comparison of means, etc.) that is "significant" (don't worry too much about what that might mean).
+
+```{r}
+# I first tried to see the relationship between the number of Grocery stores per county in 2007 vs. the number in 2011
+head(mystores)
+mytest <- t.test(mystores$GROC07, mystores$GROC11, paired = TRUE)
+pval <- mytest$p.value
+pval
+# The pval was .784, not significant
+
+# Next, I looked at the relationship between the number of Grocery stores per county in 2007 vs. the number of Convenience stores per county in 2007
+mytest <- t.test(mystores$GROC07, mystores$CONVS07, paired = TRUE)
+pval <- mytest$p.value
+pval
+# pval was 5.512623e-76, SIGNIFICANT
+
+# I also tried to see if there was a correlation between the change in the number of grocery stores per county between 2007 and 2011 and the change in the number of convience stores per county between 2007 and 2011 
+mycor <- cor.test(mystores[, 6], mystores[, 18])
+pval <- mycor$p.value
+pval
+# pval was .0001, SIGNIFICANT
+```
+
+
+2. Get an estimate of the effect size (e.g., the difference between means, or the correlation).
+
+```{r}
+install.packages("compute.es")
+library(compute.es)
+corval <- mycor$estimate
+corval 
+# I determined the correlation coefficient for the last realtionship I looked at in question #1. It is -.069.
+
+```
+
+
+3. Simulate data with this effect size (either using mvrnorm or adding a simulated effect), but with a much smaller data sample.  In other words, simulate an underpowered study.
+
+```{r}
+mydata <- mvrnorm(n = 10, mu = c(0, 0), Sigma = matrix(c(1, -.069, -.069, 1), nrow = 2), empirical = TRUE)
+mydata
+# Drawing from the practice, this is simulating 10 observations of two variables that are correlated at -.069. 
+```
+
+
+4. Examine the amount of effect-size inflation via the "significance filter" by looking at the effect sizes from the simulations, for just the sims where the effect turned out significant.
+
+```{r}
+# This question is confusing to me but I tried to look at distribution of correlations where the p-value was <.05. However, I get an error that says that ggplot2 doesn't know how to deal with data of class matrix. I assume this is due to the "mydata" format? 
+
+alpha <- .05
+
+results.sig <- filter(mydata, pval < alpha)
+library(ggplot2)
+ggplot(mydata, aes(cor)) + geom_histogram()
+ggplot(mydata, aes(pval)) + geom_histogram()
+
+ggplot(results.sig, aes(cor)) + geom_histogram()
+
+mydata$significant <- mydata$pval < alpha
+ggplot(mydata, aes(cor)) + geom_histogram(aes(fill = significant)) + scale_fill_brewer(palette = "Set1") + geom_vline(xintercept = .3, linetype = 2)
+
+results.sig
+# when I just look at the results.sig, I don't see any difference between those numbers and the mydata numbers. Does this actually mean they are all significant?
+
+#next, I tried to run it another way to see if I could get rid of the class matrix error. I used the observation number, correlation coeficcient and pvalue from above. 
+
+nsim = 10
+results.table <- data.frame(cor = rep(-.069, nsim), pval = .001)
+
+alpha <- .05
+
+results.sig <- filter(results.table, pval < alpha)
+library(ggplot2)
+ggplot(results.table, aes(cor)) + geom_histogram()
+ggplot(results.table, aes(pval)) + geom_histogram()
+
+ggplot(results.sig, aes(cor)) + geom_histogram()
+
+results.table$significant <- results.table$pval < alpha
+ggplot(results.table, aes(cor)) + geom_histogram(aes(fill = significant)) + scale_fill_brewer(palette = "Set1") + geom_vline(xintercept = .3, linetype = 2)
+
+# The result, however, looked odd and only had one value/bar on the historgram. 
+```
+

@@ -1,0 +1,60 @@
+---
+title: "Day 11 Practice/Homework"
+output: html_document
+---
+# I was not sure exactly what you were asking for but I tried to make a function using both of the parts you listed 
+Make a function that:
+  1. Runs the code in every .R script in a directory
+    - `dir()`
+    - `source()`
+    
+```{r}
+file.sources = list.files(c("C:/Desktop/PSYC 798W"), 
+    pattern="\\.Rmd$", full.names=TRUE, 
+    ignore.case=FALSE)
+
+for (f in list.files(pattern="\\.Rmd$")) {
+    source(f)
+}
+# I tried both of these functions but both of them gave me an empty set of values. I would theoretically want to then apply some kind of change/adjustment to all of "f" or the sourced files
+
+```
+    
+  
+  2. Returns the names of all the files you ran (without the .R extension)
+    - `sub()` or `gsub()`
+    
+```{r}
+grep(pattern="-\\.Rmd$", x, ignore.case = FALSE, perl = FALSE, value = FALSE, fixed = FALSE, useBytes = FALSE, invert = FALSE)
+
+# This function is trying to return everything that is not .Rmd but it still gives me nothing even though it runs
+```
+
+    
+  3. Returns the names of all functions you loaded (assuming the .R scripts have functions
+    - HARD WAY 
+      - `readLines()`
+      - `?
+      gsub()`
+    - easier way
+      - `ls()`
+      
+```{r}
+
+readLines(con = "stdin("-\\.Rmd$"), n = -1L, ok = TRUE, warn = TRUE,
+          encoding = "unknown", skipNul = FALSE)
+
+ls(name, pos = -1L, envir = as.environment(pos),
+   all.names = TRUE, pattern)
+
+# this would work as long as there is no problem returning files back to the current enviornment
+
+
+
+```
+
+
+
+```
+
+```
